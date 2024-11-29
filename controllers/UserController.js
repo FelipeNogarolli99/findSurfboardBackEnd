@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken")
 //helpers
 const createUserToken = require("../helpers/create-user-token")
 const getToken = require("../helpers/get-token")
+const getUserByToken = require("../helpers/get-user-by-token-js")
+const {imageUpload} = require('../helpers/image-upload')
 
 module.exports = class UserController{
     static async register (req, res){
@@ -139,5 +141,88 @@ module.exports = class UserController{
         }
 
         res.status(200).json({user})
+    }
+
+    static async editUser(req, res){
+        const id = req.params.id
+
+        //check if user exists
+        const token = getToken(req)
+        const user = await getUserByToken(token)
+
+        const {name, email, phone, password, confirmpassword} = req.body
+
+        let image = ''
+
+        if (req.file) {
+          user.image = req.file.filename
+        }
+        if(!name){
+            res.status(422).json({message: "O nome é obrigatório"})
+            return
+        }
+
+        user.name = name
+
+        if(!email){
+            res.status(422).json({message: "O e-mail é obrigatório"})
+            return
+        }
+
+        // verifica se o email está cadastrado
+        const userExists = await User.findOne({email: email})
+
+        if(user.email !== email && userExists){
+            res.status(422).json({
+                message: "Por favor, tente outro email ",
+            })
+            return
+        }
+
+        user.email = email
+
+    
+        if(!phone){
+            res.status(422).json({message: "O telefone é obrigatório"})
+            return
+        }
+        user.phone = phone
+
+        if(password != confirmpassword){
+            res.status(422).json({message: "As senhas não conferem!"})
+            return
+        } else if(password === confirmpassword && password != null){
+            // create a password
+            const salt = await bcrypt.genSalt(12) //12 caracters e mais para ficar mais dificil.
+            const passwordHash = await bcrypt.hash(password, salt) //cria a senha codificada
+
+            user.password = passwordHash
+        }
+
+        try {
+            //returns user update data 
+            await User.findByIdAndUpdate(
+                {_id:user._id},
+                {$set: user},
+                {new: true},
+            )
+            res.status(200).json({
+                message: "Atualizado com sucesso!",
+            })
+
+        } catch (error) {
+            res.status(500).json({message: error})
+            return
+         }
+
+       
+
+        // if(!user){
+        //     res.status(422).json({
+        //         message: "Usuario não encontrado",
+        //     })
+        //     return
+        // }
+        
     }
 }
