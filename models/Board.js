@@ -22,7 +22,7 @@ const Board = mongoose.model(
                required: true 
             },
             mark:{
-                type, String,
+                type: String,
                 required: true
             },
             model:{

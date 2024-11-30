@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken")
 //helpers
 const createUserToken = require("../helpers/create-user-token")
 const getToken = require("../helpers/get-token")
-const getUserByToken = require("../helpers/get-user-by-token-js")
+const getUserByToken = require("../helpers/get-user-by-token")
 const {imageUpload} = require('../helpers/image-upload')
 
 module.exports = class UserController{
