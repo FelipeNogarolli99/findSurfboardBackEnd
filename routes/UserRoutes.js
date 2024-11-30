@@ -3,8 +3,8 @@ const router = require("express").Router()
 const UserController = require("../controllers/UserController")
 
 //middleware
-const varifyToken = require("../helpers/verify-token-js")
-const {imageUpload} = require("../helpers/image-upload") 
+const varifyToken = require("../helpers/verify-token.js")
+const {imageUpload} = require("../helpers/image-upload.js") 
 
 router.post("/register" , UserController.register)
 router.post("/login" , UserController.login)
