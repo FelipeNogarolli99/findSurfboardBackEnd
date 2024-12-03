@@ -249,5 +249,74 @@ module.exports = class BoardsController{
         })
 
     }
+
+    static async schedule(req, res){
+        const id = req.params.id
+
+        //check if board exists
+        const board = await Board.findOne({_id: id})
+
+        if(!board){
+         res.status(404).json({ message: 'Prancha não encontrada!'})
+        }
+
+        //check if user registered boards
+        const token = getToken(req);
+        const user = await getUserByToken(token);
+     
+         if (board.user._id.equals(user._id)) {
+              res.status(422).json({ 
+                message: 'Voce não pode agendar visita da sua propria prancha! '
+            });
+            return
+         }
+
+         //check if user has already scheduled a visit
+
+         if(board.rental){
+            if(board.rental._id.equals(user._id)){
+                return res.status(422).json({ 
+                    message: 'Voce já agendou uma visita para essa prancha! '
+                });
+                return
+
+            }
+         }
+
+         //add usert to board
+
+         board.rental = {
+            _id: user._id,
+            name: user.name,
+            image: user.image
+         }
+
+         await Board.findByIdAndUpdate(id, board)
+
+         res.status(200).json({
+            message: `A visita foi agendada com sucesso, entre em contato com o ${board.user.name} pelo telefone ${board.user.phone}`
+         })
+
+    }
+
+    static async concludeRental(req, res){
+        const id= req.params.id
+
+        const board = await Board.findOne({_id: id})
+
+        if(!board){
+         res.status(404).json({ message: 'Prancha não encontrada!'})
+        }
+
+        board.available= false
+
+        await board.findByIdAndUpdate(id, board)
+        
+        res.status(200).json({
+            board: board,
+            message: `Parabéns! O ciclo de adoção foi finalizado com sucesso!`,
+          })
+
+    }
     
 }
