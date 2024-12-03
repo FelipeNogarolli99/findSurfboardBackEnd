@@ -37,7 +37,7 @@ const Board = mongoose.model(
                 type: Boolean
             },
             user: Object,
-            landlord: Object
+            rental: Object
         },
         {timestamps: true},
     )
